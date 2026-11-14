@@ -1,0 +1,18 @@
+{
+  "name": "rakshith-portfolio-root",
+  "version": "1.0.0",
+  "description": "Full-Stack Personal Portfolio for Rakshith H R with Admin Dashboard",
+  "private": true,
+  "scripts": {
+    "install:all": "npm --prefix backend install && npm --prefix frontend install",
+    "seed": "npm --prefix backend run seed",
+    "backend": "npm --prefix backend run dev",
+    "frontend": "npm --prefix frontend run dev",
+    "dev": "concurrently \"npm run backend\" \"npm run frontend\"",
+    "build": "npm --prefix frontend run build",
+    "start": "npm --prefix backend run start"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.5"
+  }
+}
