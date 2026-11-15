@@ -23,7 +23,7 @@ A modern, responsive, full-stack personal developer portfolio featuring an authe
 | **Backend** | Node.js (ES Modules), Express.js 4, Mongoose 8, Multer (File Uploads), CORS, Dotenv |
 | **Database** | MongoDB Atlas / Local MongoDB (with JSON-backed fallback data layer) |
 | **Authentication** | JSON Web Tokens (JWT), Bcrypt.js, Protected Routes & Bearer Auth Middleware |
-| **Deployment** | Vercel (Frontend SPA with rewrites) & Render (Node.js API web service) |
+| **Deployment** | Cloudflare Pages (Frontend SPA) & Render (Node.js API web service) |
 
 ---
 
@@ -216,24 +216,34 @@ Open your browser:
    - `MONGODB_URI`: *Your MongoDB Atlas connection URI*
    - `JWT_SECRET`: *A secure random string*
    - `JWT_EXPIRES_IN`: `30d`
-   - `FRONTEND_URL`: *Your Vercel frontend URL (e.g. `https://rakshith-portfolio.vercel.app`)*
+   - `ADMIN_EMAIL`: *Your secure admin email*
+   - `ADMIN_PASSWORD`: *Your secure admin password*
+   - `FRONTEND_URL`: *Your Cloudflare Pages frontend URL (e.g. `https://rakshith-portfolio.pages.dev`)*
 6. Click **Create Web Service**. Once deployed, copy your Render API URL (e.g., `https://rakshith-portfolio-backend.onrender.com`).
 7. *(Optional)* Run the seed script once against your Atlas cluster:
    ```bash
-   MONGODB_URI="<your-atlas-uri>" node backend/seed.js
+   MONGODB_URI="<your-atlas-uri>" ADMIN_EMAIL="<email>" ADMIN_PASSWORD="<password>" node backend/seed.js
    ```
 
-### C. Frontend Deployment (Vercel)
-1. Sign in to [Vercel](https://vercel.com) and click **Add New** -> **Project**.
-2. Select your portfolio GitHub repository.
-3. Configure the deployment:
-   - **Framework Preset**: `Vite`
-   - **Root Directory**: `frontend`
-   - **Build Command**: `npm run build`
-   - **Output Directory**: `dist`
-4. Under **Environment Variables**, add:
+> [!WARNING]
+> ### ⚠️ Render Free-Tier Ephemeral Storage Limitation
+> Render's Free Web Service tier operates on an **ephemeral filesystem**.
+> - Files uploaded at runtime to `backend/uploads/` (such as new resume PDFs or custom project screenshots uploaded via the Admin Dashboard) will be stored in temporary instance disk space.
+> - When the Render free service spins down due to 15 minutes of inactivity or restarts during a new build/deployment, the local disk is reset.
+> - **Pre-existing & Seeded assets** (or remote image URLs from GitHub/Imgur) remain completely unaffected and persistent in MongoDB.
+> - For permanent enterprise file persistence across restarts without paid Render disks, integrate cloud storage services such as Cloudinary or AWS S3 in a future release.
+
+### C. Frontend Deployment (Cloudflare Pages)
+1. Sign in to the [Cloudflare Dashboard](https://dash.cloudflare.com/) and navigate to **Workers & Pages** -> **Create application** -> **Pages** -> **Connect to Git**.
+2. Select your portfolio GitHub repository (`Rakshith-Portfolio`).
+3. Set the build configuration:
+   - **Framework preset**: `Vite`
+   - **Root directory**: `frontend`
+   - **Build command**: `npm run build`
+   - **Build output directory**: `dist`
+4. Under **Environment variables (production)**, add:
    - `VITE_API_URL`: *Your deployed Render backend URL (e.g. `https://rakshith-portfolio-backend.onrender.com`)*
-5. Click **Deploy**. Vercel will automatically apply the included `vercel.json` rewrites for SPA routing.
+5. Click **Save and Deploy**. Cloudflare Pages automatically handles Vite Single Page Application (SPA) routing.
 
 ---
 
@@ -243,7 +253,7 @@ Open your browser:
 - **Stateless Protected Authentication**: Admin endpoints strictly verify signed JSON Web Tokens (JWT) passed in the `Authorization: Bearer <token>` header.
 - **No Sensitive Credential Leaks**: `.env` files and credentials are systematically excluded via `.gitignore`.
 - **File Upload Safeguards**: Multer enforces strict MIME-type filters (JPEG, PNG, WEBP, SVG, PDF) and a 10MB size cap to prevent resource exhaustion attacks.
-- **CORS Whitelisting**: The backend accepts requests from local development ports, configurable production origins, and whitelisted deployment domains (`*.vercel.app`, `*.onrender.com`).
+- **Strict CORS Protection**: In production, the backend strictly permits only the exact origin configured in `FRONTEND_URL`, rejecting any unauthorized cross-origin requests. Localhost development origins remain accessible during local development.
 
 ---
 

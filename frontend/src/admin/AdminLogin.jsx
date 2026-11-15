@@ -18,8 +18,9 @@ export const AdminLogin = () => {
   const navigate = useNavigate();
   const { login, isAuthenticated } = useAuth();
 
-  const [email, setEmail] = useState('admin@rakshith.dev');
-  const [password, setPassword] = useState('admin123');
+  const isDev = Boolean(import.meta.env.DEV);
+  const [email, setEmail] = useState(isDev ? 'admin@rakshith.dev' : '');
+  const [password, setPassword] = useState(isDev ? 'admin123' : '');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -152,17 +153,19 @@ export const AdminLogin = () => {
               </div>
             </div>
 
-            {/* Quick Demo Fill button */}
-            <div className="flex items-center justify-between text-xs pt-1">
-              <span className="text-slate-400">Default: admin@rakshith.dev / admin123</span>
-              <button
-                type="button"
-                onClick={fillDemoCredentials}
-                className="text-cyan-400 hover:underline font-mono"
-              >
-                Auto Fill
-              </button>
-            </div>
+            {/* Quick Demo Fill button (Only visible during local development) */}
+            {isDev && (
+              <div className="flex items-center justify-between text-xs pt-1">
+                <span className="text-slate-400">Dev Mode: admin@rakshith.dev / admin123</span>
+                <button
+                  type="button"
+                  onClick={fillDemoCredentials}
+                  className="text-cyan-400 hover:underline font-mono"
+                >
+                  Auto Fill
+                </button>
+              </div>
+            )}
 
             {/* Sign in Button */}
             <button
