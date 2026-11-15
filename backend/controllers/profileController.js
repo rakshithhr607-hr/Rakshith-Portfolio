@@ -30,7 +30,7 @@ export const defaultProfileData = {
     'Open Source Software',
   ],
   socialLinks: {
-    github: 'https://github.com/Rakshith-HR',
+    github: 'https://github.com/rakshithhr607-hr',
     linkedin: 'https://linkedin.com/in/rakshith-hr',
     email: 'mailto:rakshith@example.com',
     twitter: '',
