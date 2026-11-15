@@ -1,3 +1,22 @@
+import mongoose from 'mongoose';
+
+// Guard against silent ephemeral saves in production when MongoDB Atlas is unreachable
+export const requireDatabaseInProduction = (req, res, next) => {
+  const isProduction = process.env.NODE_ENV === 'production';
+  const isWriteMethod = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method);
+
+  if (isProduction && isWriteMethod) {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({
+        success: false,
+        message: 'Database service is temporarily unavailable. Please try again shortly.',
+      });
+    }
+  }
+
+  next();
+};
+
 export const notFound = (req, res, next) => {
   const error = new Error(`Not Found - ${req.originalUrl}`);
   res.status(404);

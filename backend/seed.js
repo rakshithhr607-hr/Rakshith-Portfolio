@@ -35,7 +35,7 @@ const seedDatabase = async () => {
 
   try {
     console.log('[seed] Connecting to MongoDB…');
-    await mongoose.connect(uri, { serverSelectionTimeoutMS: 5000 });
+    await mongoose.connect(uri, { serverSelectionTimeoutMS: 30000 });
     console.log('[seed] Connection established.');
 
     // 1. Admin — create only if no admin exists yet

@@ -5,7 +5,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 import { connectDB, getDBStatus } from './config/db.js';
-import { notFound, errorHandler } from './middleware/errorMiddleware.js';
+import { notFound, errorHandler, requireDatabaseInProduction } from './middleware/errorMiddleware.js';
 
 import authRoutes from './routes/authRoutes.js';
 import profileRoutes from './routes/profileRoutes.js';
@@ -32,9 +32,11 @@ connectDB();
 
 // CORS Configuration
 const isProduction = process.env.NODE_ENV === 'production';
-const configuredFrontendUrl = process.env.FRONTEND_URL
-  ? process.env.FRONTEND_URL.replace(/\/$/, '')
-  : null;
+const configuredFrontendOrigins = process.env.FRONTEND_URL
+  ? process.env.FRONTEND_URL.split(',')
+      .map((url) => url.trim().replace(/\/$/, ''))
+      .filter(Boolean)
+  : [];
 
 const devOrigins = [
   'http://localhost:5173',
@@ -51,8 +53,8 @@ app.use(
       const normalizedOrigin = origin.replace(/\/$/, '');
 
       if (isProduction) {
-        // In production, allow ONLY the exact origin configured in FRONTEND_URL
-        if (configuredFrontendUrl && normalizedOrigin === configuredFrontendUrl) {
+        // In production, allow ONLY the exact origins configured in FRONTEND_URL
+        if (configuredFrontendOrigins.includes(normalizedOrigin)) {
           return callback(null, true);
         }
         return callback(new Error(`Origin ${origin} not allowed by CORS`));
@@ -61,7 +63,7 @@ app.use(
       // During development, allow localhost origins and configured FRONTEND_URL
       if (
         devOrigins.includes(normalizedOrigin) ||
-        (configuredFrontendUrl && normalizedOrigin === configuredFrontendUrl)
+        configuredFrontendOrigins.includes(normalizedOrigin)
       ) {
         return callback(null, true);
       }
@@ -93,6 +95,9 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Guard against silent ephemeral saves in production when MongoDB is disconnected
+app.use(requireDatabaseInProduction);
+
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/profile', profileRoutes);
@@ -118,7 +123,7 @@ app.get('/', (req, res) => {
 app.use(notFound);
 app.use(errorHandler);
 
-app.listen(PORT, () => {
-  console.log(`🚀 Rakshith Portfolio Backend Server running on port ${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Rakshith Portfolio Backend Server running on port ${PORT} (0.0.0.0)`);
   console.log(`📡 Health Check: http://localhost:${PORT}/api/health`);
 });
